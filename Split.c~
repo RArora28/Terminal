@@ -1,0 +1,38 @@
+
+#include <sys/wait.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#define rep(i, a, b) for(i = a; i < b; i++) 
+#define rev(i, a, b) for(i = a; i > b; i--) 
+#define Delimiters " \t\r\n\a"
+extern char *Home = {"\0"};
+
+char **Split(char *line) {
+ 
+  //splitting the a "single command" into the command name and the flags
+  int status = 1;
+  int ind = 1;
+  int position = 0;
+  char **tokens = malloc(100* sizeof(char*)), *token;
+    
+  if (!tokens) {
+    fprintf(stderr, "Allocation error\n");
+    exit(EXIT_FAILURE);
+  }
+    
+  token = strtok(line, Delimiters);
+    
+  while(token) {
+    tokens[position++] = token;
+    token = strtok(NULL, Delimiters);
+  }
+  
+  //printf("position hai : %d\n", position);
+  tokens[position] = NULL;
+  free(token);
+    
+  return tokens;
+}

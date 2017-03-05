@@ -1,0 +1,84 @@
+#include <sys/wait.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#define rep(i, a, b) for(i = a; i < b; i++) 
+#define rev(i, a, b) for(i = a; i > b; i--) 
+#define Delimiters " \t\r\n\a"
+extern char *Home;
+
+void terminal_loop()
+{
+  char *line;
+  char **args;
+  int status;
+  char *UserName = getenv("USERNAME"), *HostName = malloc(1000* sizeof(char));  
+  gethostname(HostName, 1000);
+  int i;
+  
+  do {
+    char *Currdir = malloc(1000* sizeof(char));
+    getcwd(Currdir, 1000);
+    printf("%s@%s ", UserName, HostName);
+    int currlen = strlen(Currdir);
+    int homelen = strlen(Home);
+    
+    if(currlen < homelen)
+      printf("%s $ ", Currdir);
+    else {
+      int ok = 1;
+      
+      rep(i, 0, homelen)
+	if(Currdir[i] != Home[i]) {
+	  ok = 0;
+	  break;
+	}
+      
+      if(!ok)
+	printf("%s $> ", Currdir);
+      else {
+	printf("~");
+	rep(i, homelen, currlen)
+	  printf("%c", Currdir[i]);
+	printf(" $ ");
+      }
+    }
+    
+    line = Read();
+    
+    char *prompt;
+    
+    //splitting the command on the basis of the semicolon
+    while(line) {
+      int flag = 0;
+      prompt = strsep(&line,";");
+      args = Split(prompt);
+      int len = 0;
+      
+      while(args[len] != NULL)
+	len++;
+      
+      /* printf("length hai : %d\n", len); */
+      /* printf("%s:%c\n",args[0], args[0][0]); */
+      
+      
+      if(len > 1 && args[len-1][0] == '&') { 	
+      	//printf("hello\n");
+      	flag = 1;
+      	args[len-1] = NULL;
+      }
+
+      status = execute(prompt, args, flag);
+      
+      if(status == 0)
+	return;
+    }
+    
+    free(line);   free(args);  free(Currdir);
+
+  } while (status);
+  
+  return;
+}
